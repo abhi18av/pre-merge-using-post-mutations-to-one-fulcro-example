@@ -19,7 +19,17 @@
      (update ::pc/index-resolvers #(into [] (map (fn [[k v]] [k (dissoc v ::pc/resolve)])) %))
      (update ::pc/index-mutations #(into [] (map (fn [[k v]] [k (dissoc v ::pc/mutate)])) %)))})
 
-(def all-resolvers [acct/resolvers session/resolvers index-explorer])
+
+(def all-counters
+  [{::counter-id 1 ::counter-label "A"}])
+
+(pc/defresolver counter-resolver [env {::keys [counter-id]}]
+                {::pc/input  #{::counter-id}
+                 ::pc/output [::counter-id ::counter-label]}
+                (let [{:keys [id]} (-> env :ast :params)]
+                     (first (filter #(= id (::counter-id %)) all-counters))))
+
+(def all-resolvers [acct/resolvers session/resolvers index-explorer  counter-resolver])
 
 (defn preprocess-parser-plugin
   "Helper to create a plugin that can view/modify the env/tx of a top-level request.
